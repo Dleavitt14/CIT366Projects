@@ -1,3 +1,32 @@
-<p>
-  contacts-detail works!
-</p>
+<div class="panel panel-default">
+  <a href="#" class="list-group-item clearfix" *ngFor="let contact of contacts">
+    <div class="panel-heading">
+      <h3>{{contact?.name}}</h3>
+      <div class="row pad-all">
+        <div class="clearfix pull-left">
+          <img src="{{contact?.imageUrl}}" alt="{{contact?.name}}" class="img-responsive" style="max-height: 100px">
+        </div>
+        <div class="pull-right" style="margin-top: 2rem;">
+          <div class="btn-block">
+            <button type="button" class="btn btn-primary">Edit</button>
+            <button type="button" class="btn btn-danger">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="pad-left-right">
+        <div class="row" *ngIf="contact?.email">
+          <label>Email:</label>
+          <span class="label-value">{{contact?.email}}</span>
+        </div>
+        <div class="row" *ngIf="contact?.phone">
+          <label>Phone:</label>
+          <span class="label-value">{{contact?.phone}}</span>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+
