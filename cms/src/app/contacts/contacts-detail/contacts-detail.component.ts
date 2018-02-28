@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import {Contacts} from '../contacts.model';
+import {Contact} from '../contacts.model';
 
 @Component({
   selector: 'cms-contacts-detail',
@@ -7,7 +7,7 @@ import {Contacts} from '../contacts.model';
   styleUrls: ['./contacts-detail.component.css']
 })
 export class ContactsDetailComponent implements OnInit {
-  @Input() contact: Contacts;
+  @Input() contact: Contact;
 
   constructor() { }
 
