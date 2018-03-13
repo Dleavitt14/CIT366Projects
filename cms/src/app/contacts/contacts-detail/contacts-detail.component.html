@@ -10,8 +10,8 @@
         </div>
         <div class="pull-right" style="margin-top: 2rem;">
           <div class="btn-block">
-            <button type="button" class="btn btn-primary">Edit</button>
-            <button type="button" class="btn btn-danger">Delete</button>
+            <a routerLink="../{{contact?.id}}/edit" class="btn btn-primary">Edit</a>
+            <a routerLink="/contacts" (click)="onDelete()" class="btn btn-danger">Delete</a>
           </div>
         </div>
       </div>
