@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <div class="panel-body">
+    <div *ngIf="!contact?.group" class="panel-body">
       <div class="pad-left-right">
         <div class="row" *ngIf="contact?.email">
           <label>Email:</label>
@@ -28,6 +28,10 @@
           <span class="label-value">{{contact?.phone}}</span>
         </div>
       </div>
+    </div>
+
+    <div *ngIf="contact?.group != null">
+      <cms-contact-item *ngFor="let contact of contact?.group" [contact] ="contact"></cms-contact-item>
     </div>
   </a>
 </div>
