@@ -1,7 +1,8 @@
 import {EventEmitter, Injectable} from '@angular/core';
-import {MOCKDOCUMENTS} from './MOCKDOCUMENTS';
 import {Document} from './document.model';
 import {Subject} from 'rxjs/Subject';
+import { Http, Response } from '@angular/http';
+import 'rxjs/add/operator/map';
 
 @Injectable()
 export class DocumentsService {
@@ -13,9 +14,8 @@ export class DocumentsService {
   documentSelectedEvent = new EventEmitter<Document>();
   documentChangedEvent = new EventEmitter<Document[]>();
 
-  constructor() {
-    this.documents = MOCKDOCUMENTS;
-    this.maxDocumentId = this.getMaxId();
+  constructor(private http: Http) {
+    this.inItDocuments();
   }
 
   getDocuments(): Document[] {
@@ -54,8 +54,7 @@ export class DocumentsService {
     newDocument.id = this.maxDocumentId.toString();
     this.documents.push(newDocument);
 
-    let documentListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentListClone);
+    this.storeDocuments();
   }
 
   updateDocument(originalDocument: Document, newDocument: Document) {
@@ -70,8 +69,7 @@ export class DocumentsService {
 
     newDocument.id = originalDocument.id;
     this.documents[pos] = newDocument;
-    let documentListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentListClone);
+    this.storeDocuments();
   }
 
   deleteDocument(document: Document) {
@@ -84,9 +82,38 @@ export class DocumentsService {
       return
     }
 
-    this.documents = this.documents.splice(pos, 1);
-    let documentsListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentsListClone);
+    this.documents.splice(pos, 1);
+    this.storeDocuments();
+  }
+
+  inItDocuments() {
+    this.http.get('https://cit261-cms.firebaseio.com/documents.json')
+    .map(
+      (response: Response) => {
+        const documentsReturned: Document[] = response.json();
+        return documentsReturned;
+      }
+    )
+      .subscribe(
+        (documentsReturned: Document[]) => {
+          this.documents = documentsReturned;
+          this.maxDocumentId = this.getMaxId();
+          const documentListClone = this.documents.slice();
+          this.documentListChangedEvent.next(documentListClone);
+        }
+      );
+  }
+
+  storeDocuments() {
+    JSON.stringify(this.documents);
+    this.http.put('https://cit261-cms.firebaseio.com/documents.json', this.documents)
+      .subscribe(
+        () => {
+          let documentsListClone = this.documents.slice();
+          this.documentListChangedEvent.next(documentsListClone);
+        }
+      )
+
   }
 
 }
