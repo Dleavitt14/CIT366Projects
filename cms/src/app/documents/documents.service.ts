@@ -1,8 +1,8 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {Document} from './document.model';
 import {Subject} from 'rxjs/Subject';
-import { Http, Response } from '@angular/http';
-import 'rxjs/add/operator/map';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import 'rxjs/Rx';
 
 @Injectable()
 export class DocumentsService {
@@ -14,7 +14,7 @@ export class DocumentsService {
   documentSelectedEvent = new EventEmitter<Document>();
   documentChangedEvent = new EventEmitter<Document[]>();
 
-  constructor(private http: Http) {
+  constructor(private http: HttpClient) {
     this.inItDocuments();
   }
 
@@ -45,61 +45,83 @@ export class DocumentsService {
     return maxId;
   }
 
-  addDocument(newDocument: Document) {
-    if (newDocument === null) {
+  addDocument(document: Document) {
+    if (!document) {
       return
     }
 
-    this.maxDocumentId++;
-    newDocument.id = this.maxDocumentId.toString();
-    this.documents.push(newDocument);
+    const headers = new HttpHeaders ({
+      'Content-Type': 'application/json'
+    });
 
-    this.storeDocuments();
+    document.id = '';
+    const strDocument = JSON.stringify(document);
+
+    this.http.post('http://localhost:3000/documents', strDocument, {headers: headers})
+      .map(
+        (res: any) => {
+          return res.json().obj;
+        })
+      .subscribe(
+        (documents: Document[]) => {
+          this.documents = documents;
+          this.documentChangedEvent.next(this.documents.slice());
+        });
   }
 
   updateDocument(originalDocument: Document, newDocument: Document) {
-    if (originalDocument === null || newDocument === null) {
+    if (!originalDocument || !newDocument) {
       return
     }
 
-    let pos = this.documents.indexOf(originalDocument);
-    if (pos < 0) {
-      return
-    }
+    const headers = new HttpHeaders ({
+      'Content-Type': 'application/json'
+    });
 
-    newDocument.id = originalDocument.id;
-    this.documents[pos] = newDocument;
-    this.storeDocuments();
+    const strDocument = JSON.stringify(newDocument);
+
+    this.http.patch('http://localhost:3000/documents/' + originalDocument.id, strDocument,
+      {headers: headers})
+      .map(
+        (res: any) => {
+          return res.json().obj;
+        })
+      .subscribe(
+        (documents: Document[]) => {
+          this.documents = documents;
+          this.documentChangedEvent.next(this.documents.slice());
+        });
   }
 
   deleteDocument(document: Document) {
-    if (document === null) {
+    if (!document) {
       return
     }
 
-    let pos = this.documents.indexOf(document);
-    if (pos < 0) {
-      return
-    }
-
-    this.documents.splice(pos, 1);
-    this.storeDocuments();
+    this.http.delete('http://localhost:3000/documents/' + document.id)
+      .map(
+        (res: any) => {
+          return res.json().obj;
+        })
+      .subscribe(
+        (documents: Document[]) => {
+          this.documents = documents;
+          this.documentChangedEvent.next(this.documents.slice());
+        });
   }
 
   inItDocuments() {
-    this.http.get('https://cit261-cms.firebaseio.com/documents.json')
+    this.http.get('https://localhost:3000/documents')
     .map(
-      (response: Response) => {
-        const documentsReturned: Document[] = response.json();
-        return documentsReturned;
+      (res: any) => {
+        return res.json().obj
       }
     )
       .subscribe(
         (documentsReturned: Document[]) => {
           this.documents = documentsReturned;
           this.maxDocumentId = this.getMaxId();
-          const documentListClone = this.documents.slice();
-          this.documentListChangedEvent.next(documentListClone);
+          this.documentListChangedEvent.next(this.documents.slice());
         }
       );
   }
